@@ -13,7 +13,7 @@ const Toggle = () => {
   };
 
   return (
-    <div className="toggle" onClick={handleClick}>
+    <div className="toggle" style={{background:darkMode?"":"#101726"}} onClick={handleClick}>
         {darkMode?<Sun></Sun>:<Moon></Moon>}
 
     </div>

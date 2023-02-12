@@ -1,11 +1,11 @@
 import React, { useContext, useEffect, useState } from "react";
 
 import { RadioGroup } from "@headlessui/react";
-import { getTitles, getNote, noteAdd } from "../../utilities/coreServiceAPI";
+import { getTitles, getNote, noteAdd, noteDelete, noteUpdate } from "../../utilities/coreServiceAPI";
 import formatDistance from "date-fns/formatDistanceToNow";
-import NoteDetail from "../NoteDetail/NoteDetail";
 
-import Datetime from 'react-datetime';
+
+
 
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
@@ -49,15 +49,18 @@ function CheckIcon(props) {
 }
 const Sidebar = () => {
   const [selected, setSelected] = useState(plans[0]);
-  const [note, setNote] = useState({});
+  const [note, setNote] = useState();
+  const [content, setContent]=useState();
   const [title, setTitle]=useState('');
   const [noteTitles, setNoteTitles] = useState([]);
 
   const theme=useContext(themeContext);
   const darkMode=theme.state.darkMode;
 
+
+
   useEffect(() => {
-    const getTitlesinfirebase = async () => {
+    const getTitles = async () => {
       const q = query(collection(db, "notes"));
       onSnapshot(q, (querySnapshot) => {
         setNoteTitles(
@@ -68,24 +71,17 @@ const Sidebar = () => {
         );
       });
     };
-    getTitlesinfirebase();
+    getTitles();
 
-    // getTitles().then(res=>{
-    //   setNoteTitles(res.data.notesApp);
-    //   console.log(res.data.notesApp);
-    // }).catch(error=>console.log(error));
-    // loadingbar
+
   }, []);
 
   async function handleGetNote(id) {
     let getNotePromise = getNote(id);
     getNotePromise
       .then((res) => {
-        if (res && res.error) {
-          console.error(res.error);
-        } else {
-          setNote(res);
-        }
+        setNote(res);
+        setContent(res.data.content)
       })
       .catch((error) => {
         console.error(error);
@@ -94,19 +90,21 @@ const Sidebar = () => {
 
   async function handleAdd() {
     const today = Date.now();
-    const data={
-      title:title?title:"null",
-      content:note.data.content?note.data.content:"null",
-      createdAt:new Intl.DateTimeFormat('en-US', {year: 'numeric', month: '2-digit',day: '2-digit', hour: '2-digit', minute: '2-digit'}).format(today),
-    }
     validateInput(title).then(res=>{
       if(res){
-        let nodeAddPromise=noteAdd(data);
-        toast.promise(nodeAddPromise,{
+        const data={
+          title:title?title:"null",
+          content:content?content:"null",
+          createdAt:new Intl.DateTimeFormat('en-US', {year: 'numeric', month: '2-digit',day: '2-digit', hour: '2-digit', minute: '2-digit'}).format(today),
+          updateAt:new Intl.DateTimeFormat('en-US', {year: 'numeric', month: '2-digit',day: '2-digit', hour: '2-digit', minute: '2-digit'}).format(today),
+        }
+        let noteAddPromise=noteAdd(data);
+        toast.promise(noteAddPromise,{
         loading:'please wait',
         success:<b>note successfully added</b>,
-        error:<b>note could not be saved</b>
+        error:<b>note could not be added</b>
         })
+        setTitle('');
       }
       else{
         toast.error("f*cking shit")
@@ -115,11 +113,21 @@ const Sidebar = () => {
   }
 
   async function handleClear(){
-    setNote("");
+    setContent('');
   }
+
   async function handleDelete(id){
+    let noteDeletePromise=noteDelete(id);
+    toast.promise(noteDeletePromise,{
+      loading:'please wait',
+      success:<b>note successfully deleted</b>,
+      error:<b>note could not be deleted</b>
+    })
 
   }
+
+
+
   async function handleController(){
     
   }
@@ -132,7 +140,7 @@ const Sidebar = () => {
             <RadioGroup value={selected} onChange={setSelected}>
               <div className="space-y-2">
                 {noteTitles &&
-                  noteTitles?.sort((noteDetail)=>noteDetail.data.updateBy?noteDetail.data.updateBy:noteDetail.data.createdAt).map((noteDetail) => (
+                  noteTitles?.sort((noteDetail)=>noteDetail.data.updateAt?noteDetail.data.updateAt:noteDetail.data.createdAt).map((noteDetail) => (
                     <RadioGroup.Option
                       onClick={() => handleGetNote(noteDetail.id)}
                       key={noteDetail.id}
@@ -183,10 +191,15 @@ const Sidebar = () => {
                                   </span>{" "}
                                 </RadioGroup.Description>
                               </div>
+                             
                             </div>
                             {checked && (
-                              <div className="shrink-0 text-white">
-                                <CheckIcon className="h-6 w-6" />
+                              <div className="shrink-0 text-white flex flex-row">
+                                 <button onClick={()=>handleDelete(noteDetail.id)} class="inline-flex items-center px-3 py-2 bg-red-500 hover:bg-red-700 text-white text-sm font-medium rounded-md">
+                                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                  </svg>
+                                  </button>
                               </div>
                             )}
                           </div>
@@ -203,11 +216,11 @@ const Sidebar = () => {
         className=" flex flex-col w-full px-4 py-16
      "
       >
-        <div className="flex items-center border-b border-teal-500 py-2">
-          <input onChange={(e)=>setTitle(e.target.value)}
+        <div className="border-dashed border-2 space-x-2 border-sky-500 mb-2 flex items-center border-b border-teal-500 py-2">
+          <input value={title} onChange={(e)=>setTitle(e.target.value)}
             className="appearance-none bg-transparent border-none w-full text-gray-700 mr-3 py-1 px-2 leading-tight focus:outline-none"
             type="text"
-            placeholder="Note title"
+            placeholder="input note title"
             aria-label="Full name"
           />
           <button onClick={()=>handleAdd()}
@@ -216,34 +229,33 @@ const Sidebar = () => {
           >
             Add to note
           </button>
+          {/* <button onClick={()=>handleSave(note.id,note.data.title)}
+            className="flex-shrink-0 bg-blue-500 hover:bg-blue-700 border-blue-500 hover:border-blue-700 text-sm border-4 text-white py-1 px-2 rounded"
+            type="button"
+          >
+            Save
+          </button> */}
           <button onClick={()=>handleClear()}
             className="flex-shrink-0 border-transparent border-4 text-teal-500 hover:text-teal-800 text-sm py-1 px-2 rounded"
             type="button"
           >
             Clear
           </button>
-          <button onClick={()=>handleDelete(note.data.id)}
-            className="flex-shrink-0 border-transparent border-4 text-teal-500 hover:text-teal-800 text-sm py-1 px-2 rounded"
-            type="button"
-          >
-            Delete
-          </button>
+          
         </div>
         <CKEditor
           editor={ClassicEditor}
-          data={note.data && note.data.content ? note.data.content : ""}
+          data={content && content ? content : ""}
           onReady={(editor) => {
             // You can store the "editor" and use when it is needed.
           }}
           onChange={(event, editor) => {
-            setNote({ data: { content: editor.getData() } });
+            setContent(editor.getData())
           }}
           onBlur={(event, editor) => {}}
           onFocus={(event, editor) => {}}
         />
-        <button onClick={()=>handleController()} class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-  Button
-</button>
+        
       </div>
     </>
   );
