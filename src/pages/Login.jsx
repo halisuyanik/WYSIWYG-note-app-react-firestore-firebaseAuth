@@ -5,6 +5,7 @@ import {useAuthStore} from '../store/AuthStore'
 import { useFormik } from 'formik';
 import { useContext } from 'react';
 import { themeContext } from '../context/useThemeContext';
+import {emailValidate} from '../utilities/validate'
 export default function Login() {
     
     const theme=useContext(themeContext);
@@ -15,11 +16,12 @@ export default function Login() {
         initialValues : {
           email : ''
         },
+        validate:emailValidate,
         validateOnBlur: false,
         validateOnChange: false,
         onSubmit : async values => {
           setEmail(values.email);
-          navigate('/');
+          navigate('/password');
     
         }
       })

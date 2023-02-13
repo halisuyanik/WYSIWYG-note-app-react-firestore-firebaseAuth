@@ -1,10 +1,10 @@
 import React, { useContext, useEffect, useState } from "react";
-
+import { useNavigate } from "react-router-dom";
 import { RadioGroup } from "@headlessui/react";
 import { getTitles, getNote, noteAdd, noteDelete, noteUpdate } from "../../utilities/coreServiceAPI";
 import formatDistance from "date-fns/formatDistanceToNow";
 
-
+import { useAuthContext } from "../../hooks/authHooks";
 
 
 import { CKEditor } from "@ckeditor/ckeditor5-react";
@@ -48,6 +48,7 @@ function CheckIcon(props) {
   );
 }
 const Sidebar = () => {
+  const navigate=useNavigate();
   const [selected, setSelected] = useState(plans[0]);
   const [note, setNote] = useState();
   const [content, setContent]=useState();
@@ -57,6 +58,7 @@ const Sidebar = () => {
   const theme=useContext(themeContext);
   const darkMode=theme.state.darkMode;
 
+  const {user}=useAuthContext();
 
 
   useEffect(() => {
@@ -131,7 +133,9 @@ const Sidebar = () => {
   async function handleController(){
     
   }
+  if(!user){navigate('/login')}
   return (
+    
     <>
       <div className="row-span-3 flex flex-col">
       <Toaster position="top-center" reverseOrder={false}></Toaster>

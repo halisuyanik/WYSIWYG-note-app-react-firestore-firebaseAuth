@@ -10,6 +10,8 @@ import {
 } from "firebase/firestore"
 import { db } from "../firebase-config";
 
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+
 
 export async function getTitles() {
 
@@ -69,13 +71,16 @@ export async function noteDelete(id) {
     }
 }
 
-export async function noteUpdate(id, data){
-    
-      try {
-        
+
+export async function userLogin(email, password){
+    try {
+        const auth = getAuth();
+        await signInWithEmailAndPassword(auth, email, password)
+        return signInWithEmailAndPassword;
     } catch (error) {
-        return Promise.reject({
+          return Promise.reject({
             error
         });
     }
 }
+

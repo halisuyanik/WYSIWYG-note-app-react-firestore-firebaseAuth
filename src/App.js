@@ -7,6 +7,7 @@ import Navbar from './components/Navbar/Navbar';
 import Login from './pages/Login';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import Signup from './pages/Signup';
+import Password from './pages/Password';
 
 const router=createBrowserRouter([
   {
@@ -20,6 +21,10 @@ const router=createBrowserRouter([
   {
     path:'Signup',
     element:<Signup></Signup>
+  },
+  {
+    path:'Password',
+    element:<Password></Password>
   }
   
 ])
