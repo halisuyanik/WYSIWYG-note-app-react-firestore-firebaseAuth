@@ -71,16 +71,17 @@ export async function noteDelete(id) {
     }
 }
 
-
-export async function userLogin(email, password){
+export async function noteUpdate(id, data){
     try {
-        const auth = getAuth();
-        await signInWithEmailAndPassword(auth, email, password)
-        return signInWithEmailAndPassword;
+        const docRef=doc(db, 'notes', id);
+        await updateDoc(docRef,{
+            title:data.title,
+            content:data.content,
+            updateAt:data.updateAt
+        })
     } catch (error) {
-          return Promise.reject({
+        return Promise.reject({
             error
         });
     }
 }
-

@@ -1,11 +1,13 @@
 import React from 'react'
 import { Link, useNavigate } from "react-router-dom";
-import { Toaster } from "react-hot-toast";
+import { toast, Toaster } from "react-hot-toast";
 import {useAuthStore} from '../store/AuthStore'
 import { useFormik } from 'formik';
 import { useContext } from 'react';
 import { themeContext } from '../context/useThemeContext';
 import {emailValidate} from '../utilities/validate'
+import { getAuth, fetchSignInMethodsForEmail } from "firebase/auth";
+
 export default function Login() {
     
     const theme=useContext(themeContext);
@@ -20,9 +22,8 @@ export default function Login() {
         validateOnBlur: false,
         validateOnChange: false,
         onSubmit : async values => {
-          setEmail(values.email);
-          navigate('/password');
-    
+          setEmail(values.email)
+          navigate('/password')    
         }
       })
     

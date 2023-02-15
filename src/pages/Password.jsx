@@ -3,7 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
 import toast, { Toaster } from "react-hot-toast";
 import { useAuthStore } from "../store/AuthStore";
-import { userLogin } from "../utilities/coreServiceAPI";
 import { themeContext } from "../context/useThemeContext";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { useAuthContext } from "../hooks/authHooks";
@@ -15,6 +14,7 @@ export default function Password() {
   const navigate = useNavigate();
   const { email } = useAuthStore((state) => state.auth);
   const { dispatch } = useAuthContext();
+  const {user}=useAuthContext();
 
   const formik = useFormik({
     initialValues: {
@@ -22,28 +22,25 @@ export default function Password() {
     },
 
     onSubmit: async (values) => {
-      console.log(email + values.password);
       const auth = getAuth();
       let userLoginPromise=signInWithEmailAndPassword(auth, email, values.password)
-        .then((userCredential) => {
+        .then(async (userCredential) => {
           const user = userCredential.user;
-          localStorage.setItem("user", JSON.stringify(user.auth.currentUser.email));
+          const token= await user.getIdToken();
+          localStorage.setItem("user", JSON.stringify(token));
           dispatch({
             type: "SIGNIN",
-            payload: JSON.stringify(user.auth.currentUser.email),
+            payload: JSON.stringify(token),
           });
-        })
-        toast.promise(userLoginPromise,{
-          loading:'please wait',
-          success:<b>sign in success</b>,
-          error:<b>password not match</b>
-        })
-        userLoginPromise.then(
           navigate('/')
-        )
+        })
+      toast.promise(userLoginPromise,{
+        loading:'please wait',
+        success:<b>sign in success</b>,
+        error:<b>password not match</b>
+      })
     },
   });
-  
   return (
     <>
       {/* Page Container */}
@@ -123,20 +120,9 @@ export default function Password() {
                         </button>
                         <div className="space-y-2 sm:flex sm:items-center sm:justify-between sm:space-x-2 sm:space-y-0 mt-4">
                           <label className="flex items-center">
-                            <input
-                              type="checkbox"
-                              id="remember_me"
-                              name="remember_me"
-                              className="border border-gray-200 rounded h-4 w-4 text-teal-500 focus:border-teal-500 focus:ring focus:ring-teal-500 focus:ring-opacity-50"
-                            />
-                            <span className="ml-2">Remember me</span>
+
                           </label>
-                          <Link
-                            to="/recovery"
-                            className="inline-block text-teal-600 hover:text-teal-400"
-                          >
-                            Forgot Password?
-                          </Link>
+
                         </div>
                       </div>
                     </form>

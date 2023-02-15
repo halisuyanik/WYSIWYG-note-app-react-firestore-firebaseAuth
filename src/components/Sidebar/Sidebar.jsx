@@ -11,15 +11,16 @@ import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 
 import {
-  collection,
-  /* getDocs, where, */ query,
-  /* orderBy, */ onSnapshot /* getDoc, doc */,
+  collection, getDocs, where, query, orderBy, onSnapshot,
+   getDoc, doc, QuerySnapshot 
 } from "firebase/firestore";
 import { db } from "../../firebase-config";
 import toast, { Toaster } from "react-hot-toast";
 import { themeContext } from "../../context/useThemeContext";
 
 import { validateInput } from "../../utilities/validate";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import Loading from '../Loading/Loading'
 
 const plans = [
   {
@@ -54,16 +55,15 @@ const Sidebar = () => {
   const [content, setContent]=useState();
   const [title, setTitle]=useState('');
   const [noteTitles, setNoteTitles] = useState([]);
-
   const theme=useContext(themeContext);
   const darkMode=theme.state.darkMode;
-
   const {user}=useAuthContext();
-
+  const today = Date.now();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const getTitles = async () => {
-      const q = query(collection(db, "notes"));
+      const q = query(collection(db, "notes"), where('userId','==','HVL9Tfsy3BUIHr4cxPrMgLvtVBs1'));
       onSnapshot(q, (querySnapshot) => {
         setNoteTitles(
           querySnapshot.docs.map((doc) => ({
@@ -72,11 +72,14 @@ const Sidebar = () => {
           }))
         );
       });
+
     };
-    getTitles();
-
-
-  }, []);
+    if(user){
+      getTitles();
+      setLoading(false);
+    }
+    
+  }, [note, user]);
 
   async function handleGetNote(id) {
     let getNotePromise = getNote(id);
@@ -84,6 +87,7 @@ const Sidebar = () => {
       .then((res) => {
         setNote(res);
         setContent(res.data.content)
+        setTitle(res.data.title)
       })
       .catch((error) => {
         console.error(error);
@@ -91,25 +95,29 @@ const Sidebar = () => {
   }
 
   async function handleAdd() {
-    const today = Date.now();
     validateInput(title).then(res=>{
       if(res){
-        const data={
-          title:title?title:"null",
-          content:content?content:"null",
-          createdAt:new Intl.DateTimeFormat('en-US', {year: 'numeric', month: '2-digit',day: '2-digit', hour: '2-digit', minute: '2-digit'}).format(today),
-          updateAt:new Intl.DateTimeFormat('en-US', {year: 'numeric', month: '2-digit',day: '2-digit', hour: '2-digit', minute: '2-digit'}).format(today),
-        }
-        let noteAddPromise=noteAdd(data);
-        toast.promise(noteAddPromise,{
-        loading:'please wait',
-        success:<b>note successfully added</b>,
-        error:<b>note could not be added</b>
+        const auth=getAuth();
+        onAuthStateChanged(auth,(user)=>{
+          const data={
+            title:title?title:"null",
+            content:content?content:"null",
+            createdAt:new Intl.DateTimeFormat('en-US', {year: 'numeric', month: '2-digit',day: '2-digit', hour: '2-digit', minute: '2-digit'}).format(today),
+            updateAt:new Intl.DateTimeFormat('en-US', {year: 'numeric', month: '2-digit',day: '2-digit', hour: '2-digit', minute: '2-digit'}).format(today),
+            userId:user.uid
+          }
+          let noteAddPromise=noteAdd(data);
+          toast.promise(noteAddPromise,{
+          loading:'please wait',
+          success:<b>note successfully added</b>,
+          error:<b>note could not be added</b>
+          })
+          setTitle('');
         })
-        setTitle('');
+       
       }
       else{
-        toast.error("f*cking shit")
+        toast.error("f*cking shit xss")
       }
     })
   }
@@ -128,16 +136,34 @@ const Sidebar = () => {
 
   }
 
-
-
-  async function handleController(){
-    
+  async function handleSave(){
+    validateInput(title).then(res=>{
+      if(res){
+        const data={
+          title:title,
+          content:content,
+          updateAt:new Intl.DateTimeFormat('en-US', {year: 'numeric', month: '2-digit',day: '2-digit', hour: '2-digit', minute: '2-digit'}).format(today),
+        }
+        let noteUpdatePromise=noteUpdate(note.id, data);
+        toast.promise(noteUpdatePromise,{
+          loading:'please wait',
+          success:<b>note successfully updated</b>,
+          error:<b>note could not be updated</b>
+        })
+      }
+      else{
+        toast.error("f*cking shit xss")
+      }
+    })
   }
-  if(!user){navigate('/login')}
+
+
   return (
     
     <>
-      <div className="row-span-3 flex flex-col">
+  {loading?(<div>{loading && <Loading></Loading>}</div>):(
+    <div class="grid  grid-flow-col">
+<div className="row-span-3 flex flex-col">
       <Toaster position="top-center" reverseOrder={false}></Toaster>
         <div className="w-full px-4 py-16">
           <div className="mx-auto w-full max-w-md">
@@ -233,12 +259,12 @@ const Sidebar = () => {
           >
             Add to note
           </button>
-          {/* <button onClick={()=>handleSave(note.id,note.data.title)}
+          {note?<button onClick={()=>handleSave(note.id,note.data.title)}
             className="flex-shrink-0 bg-blue-500 hover:bg-blue-700 border-blue-500 hover:border-blue-700 text-sm border-4 text-white py-1 px-2 rounded"
             type="button"
           >
             Save
-          </button> */}
+          </button>:null}
           <button onClick={()=>handleClear()}
             className="flex-shrink-0 border-transparent border-4 text-teal-500 hover:text-teal-800 text-sm py-1 px-2 rounded"
             type="button"
@@ -261,6 +287,9 @@ const Sidebar = () => {
         />
         
       </div>
+    </div>
+  )}
+      
     </>
   );
 };
