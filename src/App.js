@@ -10,7 +10,6 @@ import Signup from './pages/Signup';
 import Password from './pages/Password';
 import NotFound from './pages/NotFound/NotFound';
 import { useAuthContext } from './hooks/authHooks';
-
 import {BrowserRouter, Routes, Route, Navigate} from 'react-router-dom';
 
 function App() {
@@ -20,10 +19,12 @@ function App() {
 
 
   return (
-    <div className="App" style={{
+    <>
+
+    <div className="App  transition-all duration-200 ease-out" style={{
       background: darkMode ? "#101726" : "",
-      color: darkMode ? "white" : "",
     }}>
+      
       <BrowserRouter>
       <div class="md:container md:mx-auto">
         <Navbar></Navbar>
@@ -39,7 +40,7 @@ function App() {
         </Routes>
       </div> 
       </BrowserRouter>
-    </div>
+    </div></>
   );
 }
 

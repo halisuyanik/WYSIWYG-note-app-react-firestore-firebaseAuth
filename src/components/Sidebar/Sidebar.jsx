@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { RadioGroup } from "@headlessui/react";
-import { getTitles, getNote, noteAdd, noteDelete, noteUpdate } from "../../utilities/coreServiceAPI";
+import { getNote, noteAdd, noteDelete, noteUpdate } from "../../utilities/coreServiceAPI";
 import formatDistance from "date-fns/formatDistanceToNow";
 
 import { useAuthContext } from "../../hooks/authHooks";
@@ -11,8 +11,7 @@ import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 
 import {
-  collection, getDocs, where, query, orderBy, onSnapshot,
-   getDoc, doc, QuerySnapshot 
+  collection, where, query, onSnapshot, serverTimestamp
 } from "firebase/firestore";
 import { db } from "../../firebase-config";
 import toast, { Toaster } from "react-hot-toast";
@@ -34,20 +33,7 @@ const plans = [
   },
 ];
 
-function CheckIcon(props) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" {...props}>
-      <circle cx={12} cy={12} r={12} fill="#fff" opacity="0.2" />
-      <path
-        d="M7 13l3 3 7-7"
-        stroke="#fff"
-        strokeWidth={1.5}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
+
 const Sidebar = () => {
   const navigate=useNavigate();
   const [selected, setSelected] = useState(plans[0]);
@@ -102,8 +88,8 @@ const Sidebar = () => {
           const data={
             title:title?title:"null",
             content:content?content:"null",
-            createdAt:new Intl.DateTimeFormat('en-US', {year: 'numeric', month: '2-digit',day: '2-digit', hour: '2-digit', minute: '2-digit'}).format(today),
-            updateAt:new Intl.DateTimeFormat('en-US', {year: 'numeric', month: '2-digit',day: '2-digit', hour: '2-digit', minute: '2-digit'}).format(today),
+            createdAt:serverTimestamp(),
+            updateAt:serverTimestamp(),
             userId:user.uid
           }
           let noteAddPromise=noteAdd(data);
@@ -142,7 +128,7 @@ const Sidebar = () => {
         const data={
           title:title,
           content:content,
-          updateAt:new Intl.DateTimeFormat('en-US', {year: 'numeric', month: '2-digit',day: '2-digit', hour: '2-digit', minute: '2-digit'}).format(today),
+          updateAt:serverTimestamp()
         }
         let noteUpdatePromise=noteUpdate(note.id, data);
         toast.promise(noteUpdatePromise,{

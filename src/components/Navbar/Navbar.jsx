@@ -15,7 +15,7 @@ const Navbar=()=>{
     }
     return(
         <nav  className="bg-transparent  ">
-    <div className="space-x-2 container flex items-center justify-center p-6 mx-auto text-gray-600 capitalize dark:text-gray-300">
+    <div className="space-x-5 container flex items-center justify-center p-6 mx-auto text-gray-600 capitalize dark:text-gray-300">
         <Toggle></Toggle>
         {user?<button onClick={()=>handleLogout()} className="justify-end" href="/login">Logout</button>:null}
        
