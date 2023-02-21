@@ -11,7 +11,7 @@ import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 
 import {
-  collection, where, query, onSnapshot, serverTimestamp
+  collection, where, query, onSnapshot, serverTimestamp, orderBy
 } from "firebase/firestore";
 import { db } from "../../firebase-config";
 import toast, { Toaster } from "react-hot-toast";
@@ -88,8 +88,8 @@ const Sidebar = () => {
           const data={
             title:title?title:"null",
             content:content?content:"null",
-            createdAt:serverTimestamp(),
-            updateAt:serverTimestamp(),
+            createdAt:new Intl.DateTimeFormat('en-US', {year: 'numeric', month: '2-digit',day: '2-digit', hour: '2-digit', minute: '2-digit'}).format(today),
+            updateAt:new Intl.DateTimeFormat('en-US', {year: 'numeric', month: '2-digit',day: '2-digit', hour: '2-digit', minute: '2-digit'}).format(today),
             userId:user.uid
           }
           let noteAddPromise=noteAdd(data);
@@ -128,7 +128,7 @@ const Sidebar = () => {
         const data={
           title:title,
           content:content,
-          updateAt:serverTimestamp()
+          updateAt:new Intl.DateTimeFormat('en-US', {year: 'numeric', month: '2-digit',day: '2-digit', hour: '2-digit', minute: '2-digit'}).format(today)
         }
         let noteUpdatePromise=noteUpdate(note.id, data);
         toast.promise(noteUpdatePromise,{
@@ -156,7 +156,7 @@ const Sidebar = () => {
             <RadioGroup value={selected} onChange={setSelected}>
               <div className="space-y-2">
                 {noteTitles &&
-                  noteTitles?.sort((noteDetail)=>noteDetail.data.updateAt?noteDetail.data.updateAt:noteDetail.data.createdAt).map((noteDetail) => (
+                  noteTitles?.map((noteDetail) => (
                     <RadioGroup.Option
                       onClick={() => handleGetNote(noteDetail.id)}
                       key={noteDetail.id}
