@@ -148,11 +148,11 @@ const Sidebar = () => {
     
     <>
   {loading?(<div>{loading && <Loading></Loading>}</div>):(
-    <div class="grid  grid-flow-col">
+    <div class="grid grid-flow-col">
 <div className="row-span-3 flex flex-col">
       <Toaster position="top-center" reverseOrder={false}></Toaster>
-        <div className="w-full px-4 py-16">
-          <div className="mx-auto w-full max-w-md">
+        <div className="px-4 py-16 ">
+          <div className="mx-auto max-w-sm max-h-screen overflow-y-auto">
             <RadioGroup value={selected} onChange={setSelected}>
               <div className="space-y-2">
                 {noteTitles &&
@@ -232,8 +232,10 @@ const Sidebar = () => {
         className=" flex flex-col w-full px-4 py-16
      "
       >
-        <div className="border-dashed border-2 space-x-2 border-sky-500 mb-2 flex items-center border-b border-teal-500 py-2">
-          <input value={title} onChange={(e)=>setTitle(e.target.value)}
+        <div  className="border-dashed border-2 space-x-2 border-sky-500 mb-2 flex items-center border-b border-teal-500 py-2">
+          <input style={{
+      color: darkMode ? "white" : "black",
+    }} value={title} onChange={(e)=>setTitle(e.target.value)}
             className="appearance-none bg-transparent border-none w-full text-gray-700 mr-3 py-1 px-2 leading-tight focus:outline-none"
             type="text"
             placeholder="input note title"
@@ -255,7 +257,7 @@ const Sidebar = () => {
             className="flex-shrink-0 border-transparent border-4 text-teal-500 hover:text-teal-800 text-sm py-1 px-2 rounded"
             type="button"
           >
-            Clear
+            Clear🧻
           </button>
           
         </div>
